@@ -1,0 +1,34 @@
+# docker-compose.yml with security
+services:
+  app:
+    deploy:
+      resrouces:
+        cpus: '0.5'
+        memory: 512M
+        restart_policy:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+          window: 120s
+      mode: replicated
+      replicas: 1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    environment:
+      KAFKA_SUPER_USERS: 'User:admin'
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'false'
+  postgres:
+    image: postgres:13
+  redis:
+    image: redis:alpine
+ 
